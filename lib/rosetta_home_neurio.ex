@@ -94,9 +94,11 @@ defmodule Cicada.DeviceManager.Discovery.SmartMeter.Neurio do
   require Logger
   alias Cicada.DeviceManager.Device.SmartMeter
 
+  @url System.get_env("NEURIO_URL")
+
   def register_callbacks do
     Logger.info "Starting Neurio"
-    case System.get_env("NEURIO_URL") do
+    case @url do
       "" -> nil
       nil -> nil
       address -> Process.send_after(self(), {:get, address}, 1000)
