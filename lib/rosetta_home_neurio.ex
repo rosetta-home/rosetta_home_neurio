@@ -108,12 +108,18 @@ defmodule Cicada.DeviceManager.Discovery.SmartMeter.Neurio do
 
   def handle_info({:get, address}, state) do
     Process.send_after(self(), {:get, address}, 1000)
-    {:noreply,
-      address
-      |> Neurio.get!
-      |> Map.get(:body, %{})
-      |> handle_device(SmartMeter.Neurio, state)
-    }
+    Logger.info "NEURIO Address: #{address}"
+    state =
+      case address |> Neurio.get do
+        {:ok, %HTTPoison.Response{} = res} ->
+          res
+          |> Map.get(:body, %{})
+          |> handle_device(SmartMeter.Neurio, state)
+        {:error, %HTTPoison.Error{} = err} ->
+          Logger.error err.reason
+          state
+      end
+    {:noreply, state}
   end
 
   def handle_info(_device, state) do
