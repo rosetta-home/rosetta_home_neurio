@@ -33,7 +33,7 @@ defmodule Cicada.DeviceManager.Device.SmartMeter.Neurio do
   end
 
   def get_id(device) do
-    mac = device |> Map.get("meter_mac_id")
+    mac = device |> Map.get(:meter_mac_id)
     :"Neurio-#{mac}"
   end
 
@@ -101,14 +101,32 @@ defmodule Cicada.DeviceManager.Discovery.SmartMeter.Neurio do
   def register_callbacks do
     Logger.info "Starting Neurio"
     NetworkManager.register
+    Process.send_after(self(), :fake_data, 100)
     {:ok, []}
+  end
+
+  def handle_info(:fake_data, state) do
+    state =
+      %Neurio.State{
+        connection_status: "connected",
+        meter_mac_id: "0xFAK#3",
+        price: 0.04,
+        signal: 100,
+        meter_type: :electric,
+        kw_delivered: 1440.00,
+        kw_received: 0.00,
+        channel: "1",
+        kw: :rand.uniform()
+      } |> handle_device(SmartMeter.Neurio, state)
+    Process.send_after(self(), :fake_data, 1100)
+    {:noreply, state}
   end
 
   def handle_info(%NM{bound: true}, state) do
     case @url do
       "" -> nil
       nil -> nil
-      address -> Process.send_after(self(), {:get, address}, 1000)
+      address -> nil#Process.send_after(self(), {:get, address}, 1000)
     end
     {:noreply, state}
   end
@@ -126,7 +144,7 @@ defmodule Cicada.DeviceManager.Discovery.SmartMeter.Neurio do
           Logger.info "Neurio Client Error: #{err.reason}"
           state
       end
-    Process.send_after(self(), {:get, address}, 1000)
+    Process.send_after(self(), {:get, address}, 1300)
     {:noreply, state}
   end
 
