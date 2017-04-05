@@ -93,31 +93,40 @@ defmodule Cicada.DeviceManager.Discovery.SmartMeter.Neurio do
   use Cicada.DeviceManager.Discovery
   require Logger
   alias Cicada.DeviceManager.Device.SmartMeter
+  alias Cicada.NetworkManager
+  alias Cicada.NetworkManager.State, as: NM
 
   @url System.get_env("NEURIO_URL")
 
   def register_callbacks do
     Logger.info "Starting Neurio"
+    NetworkManager.register
+    {:ok, []}
+  end
+
+  def handle_info(%NM{bound: true}, state) do
     case @url do
       "" -> nil
       nil -> nil
       address -> Process.send_after(self(), {:get, address}, 1000)
     end
-    {:ok, []}
+    {:noreply, state}
   end
 
+  def handle_info(%NM{}, state), do: {:noreply, state}
+
   def handle_info({:get, address}, state) do
-    Process.send_after(self(), {:get, address}, 1000)
     state =
-      case address |> Neurio.get do
+      case address |> Neurio.get([], [recv_timeout: 700]) do
         {:ok, %HTTPoison.Response{} = res} ->
           res
           |> Map.get(:body, %{})
           |> handle_device(SmartMeter.Neurio, state)
         {:error, %HTTPoison.Error{} = err} ->
-          Logger.debug "Neurio Client Error: #{err.reason}"
+          Logger.info "Neurio Client Error: #{err.reason}"
           state
       end
+    Process.send_after(self(), {:get, address}, 1000)
     {:noreply, state}
   end
 
