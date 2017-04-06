@@ -102,7 +102,7 @@ defmodule Cicada.DeviceManager.Discovery.SmartMeter.Neurio do
     Logger.info "Starting Neurio"
     NetworkManager.register
     Process.send_after(self(), :fake_data, 100)
-    {:ok, []}
+    SmartMeter.Neurio
   end
 
   def handle_info(:fake_data, state) do
@@ -117,7 +117,7 @@ defmodule Cicada.DeviceManager.Discovery.SmartMeter.Neurio do
         kw_received: 0.00,
         channel: "1",
         kw: :rand.uniform()
-      } |> handle_device(SmartMeter.Neurio, state)
+      } |> handle_device(state)
     Process.send_after(self(), :fake_data, 1100)
     {:noreply, state}
   end
@@ -139,7 +139,7 @@ defmodule Cicada.DeviceManager.Discovery.SmartMeter.Neurio do
         {:ok, %HTTPoison.Response{} = res} ->
           res
           |> Map.get(:body, %{})
-          |> handle_device(SmartMeter.Neurio, state)
+          |> handle_device(state)
         {:error, %HTTPoison.Error{} = err} ->
           Logger.info "Neurio Client Error: #{err.reason}"
           state
