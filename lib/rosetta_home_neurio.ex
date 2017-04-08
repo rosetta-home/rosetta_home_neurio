@@ -126,7 +126,7 @@ defmodule Cicada.DeviceManager.Discovery.SmartMeter.Neurio do
     case @url do
       "" -> nil
       nil -> nil
-      address -> nil#Process.send_after(self(), {:get, address}, 1000)
+      address -> Process.send_after(self(), {:get, address}, 1000)
     end
     {:noreply, state}
   end
