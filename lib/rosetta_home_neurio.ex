@@ -101,7 +101,7 @@ defmodule Cicada.DeviceManager.Discovery.SmartMeter.Neurio do
   def register_callbacks do
     Logger.info "Starting Neurio"
     NetworkManager.register
-    Process.send_after(self(), :fake_data, 100)
+    #Process.send_after(self(), :fake_data, 100)
     SmartMeter.Neurio
   end
 
