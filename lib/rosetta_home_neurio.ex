@@ -135,7 +135,7 @@ defmodule Cicada.DeviceManager.Discovery.SmartMeter.Neurio do
 
   def handle_info({:get, address}, state) do
     state =
-      case address |> Neurio.get([], [recv_timeout: 700]) do
+      case address |> Neurio.get([], [recv_timeout: 700, timeout: 700]) do
         {:ok, %HTTPoison.Response{} = res} ->
           res
           |> Map.get(:body, %{})
