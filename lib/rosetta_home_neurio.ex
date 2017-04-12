@@ -102,10 +102,18 @@ defmodule Cicada.DeviceManager.Discovery.SmartMeter.Neurio do
     Logger.info "Starting Neurio"
     NetworkManager.register
     case NetworkManager.up do
-      true -> Process.send_after(self(), {:get, address}, 1000)
+      true -> get_info
       false -> nil
     end
     SmartMeter.Neurio
+  end
+
+  def get_info do
+    case @url do
+      "" -> nil
+      nil -> nil
+      address -> Process.send_after(self(), {:get, address}, 1000)
+    end
   end
 
   def handle_info(:fake_data, state) do
@@ -126,11 +134,7 @@ defmodule Cicada.DeviceManager.Discovery.SmartMeter.Neurio do
   end
 
   def handle_info(%NM{bound: true}, state) do
-    case @url do
-      "" -> nil
-      nil -> nil
-      address -> Process.send_after(self(), {:get, address}, 1000)
-    end
+    get_info
     {:noreply, state}
   end
 
