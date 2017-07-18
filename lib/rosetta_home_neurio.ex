@@ -134,9 +134,10 @@ defmodule Cicada.DeviceManager.Discovery.SmartMeter.Neurio do
     state =
       case address |> Neurio.get([], [recv_timeout: 700, timeout: 1300]) do
         {:ok, %HTTPoison.Response{} = res} ->
-          res
-          |> Map.get(:body, %{})
-          |> handle_device(state)
+          case res |> Map.get(:body) do
+            nil -> state
+            body -> handle_device(state)
+          end
         {:error, %HTTPoison.Error{} = err} ->
           Logger.info "Neurio Client Error: #{err.reason}"
           state
