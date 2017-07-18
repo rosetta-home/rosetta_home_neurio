@@ -139,7 +139,7 @@ defmodule Cicada.DeviceManager.Discovery.SmartMeter.Neurio do
             body -> handle_device(state)
           end
         {:error, %HTTPoison.Error{} = err} ->
-          Logger.info "Neurio Client Error: #{err.reason}"
+          Logger.debug "Neurio Client Error: #{err.reason}"
           state
       end
     Process.send_after(self(), {:get, address}, 2300)
