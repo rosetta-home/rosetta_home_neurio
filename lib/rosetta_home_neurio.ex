@@ -131,16 +131,17 @@ defmodule Cicada.DeviceManager.Discovery.SmartMeter.Neurio do
   def handle_info(%NM{}, state), do: {:noreply, state}
 
   def handle_info({:get, address}, state) do
-    state =
+    Task.start(fn ->
       case address |> Neurio.get([], [recv_timeout: 700, timeout: 1300]) do
         {:ok, %HTTPoison.Response{} = res} ->
           res
           |> Map.get(:body, %{})
           |> handle_device(state)
         {:error, %HTTPoison.Error{} = err} ->
-          Logger.debug "Neurio Client Error: #{err.reason}"
+          Logger.debug "Neurio Client Error: #{inspect err.reason}: #{address}"
           state
       end
+    end)
     Process.send_after(self(), {:get, address}, 2300)
     {:noreply, state}
   end
